@@ -7,7 +7,7 @@ import cadquery as cq
 # Adjust Python path to include the root directory for src. module imports
 sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '..')))
 
-from src.cad_model.flashlight_model import get_full_flashlight_assembly, export_flashlight_image
+from src.cad_model.flashlight_model import get_full_flashlight_assembly, export_flashlight_image, convert_svg_to_png
 
 class TestCadModel(unittest.TestCase):
     def test_import_model_module(self): # Renamed for clarity
@@ -59,6 +59,38 @@ class TestCadModel(unittest.TestCase):
     # Add a placeholder for more complex tests later (can be kept or removed if other tests are sufficient)
     def test_placeholder_for_geometry(self):
         self.assertTrue(True, "Placeholder for future geometry verification")
+
+    def test_convert_svg_to_png(self):
+        dummy_svg_content = '<svg height="100" width="100"><circle cx="50" cy="50" r="40" stroke="black" stroke-width="3" fill="red" /></svg>'
+        dummy_svg_path = "test_dummy.svg"
+        test_png_path = "test_dummy.png"
+
+        # Ensure clean state before test
+        if os.path.exists(dummy_svg_path):
+            os.remove(dummy_svg_path)
+        if os.path.exists(test_png_path):
+            os.remove(test_png_path)
+
+        with open(dummy_svg_path, 'w') as f:
+            f.write(dummy_svg_content)
+
+        convert_svg_to_png(dummy_svg_path, test_png_path)
+
+        self.assertTrue(os.path.exists(test_png_path), f"PNG file should be created at {test_png_path}")
+        self.assertTrue(os.path.getsize(test_png_path) > 0, "PNG file should not be empty")
+
+        try:
+            with open(test_png_path, 'rb') as f:
+                png_signature = f.read(8)
+            self.assertEqual(png_signature, b'\x89PNG\r\n\x1a\n', "PNG signature mismatch")
+        except Exception as e:
+            self.fail(f"Could not read or verify PNG signature: {e}")
+
+        # Clean up created files
+        if os.path.exists(dummy_svg_path):
+            os.remove(dummy_svg_path)
+        if os.path.exists(test_png_path):
+            os.remove(test_png_path)
 
 
 if __name__ == '__main__':

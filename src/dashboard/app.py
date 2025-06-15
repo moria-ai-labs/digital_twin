@@ -16,7 +16,7 @@ sys.path.insert(0, os.path.abspath(os.path.join(os.path.dirname(__file__), '../.
 
 from src.simulation.procurement import ProcurementSimulation, COMPONENTS_DATA as ORIGINAL_COMPONENTS_DATA
 from src.simulation.assembly import AssemblySimulation, ASSEMBLY_STEPS_DATA
-from src.cad_model.flashlight_model import get_full_flashlight_assembly, export_flashlight_image
+from src.cad_model.flashlight_model import get_full_flashlight_assembly, export_flashlight_image, convert_svg_to_png
 
 # Define component data scenarios for impact reporting
 COMPONENTS_DATA_SCENARIO_A = ORIGINAL_COMPONENTS_DATA
@@ -65,7 +65,8 @@ app.layout = html.Div(children=[
             html.Div([
                 html.H3("CAD Model Visualization"),
                 html.Button("Generate/Refresh CAD View", id="btn-generate-cad-view", n_clicks=0),
-                html.Img(id="img-cad-visualization", style={'maxWidth': '100%', 'height': 'auto', 'marginTop': '20px'})
+                html.Img(id="img-cad-visualization", style={'maxWidth': '100%', 'height': 'auto', 'marginTop': '20px'}),
+                html.A("Download PNG", id="link-download-png", href="#", target="_blank", download="flashlight_view.png", style={'display': 'none', 'marginTop': '10px', 'display': 'block'}) # Added target and download attributes
             ])
         ]),
         dcc.Tab(label='Assembly Visualization', value='tab-asm-vis', children=[
@@ -153,31 +154,41 @@ def update_simulation_results(n_clicks):
 
 # Define the callback for CAD visualization
 @app.callback(
-    Output('img-cad-visualization', 'src'),
+    [Output('img-cad-visualization', 'src'),
+     Output('link-download-png', 'href'),
+     Output('link-download-png', 'style')],
     [Input('btn-generate-cad-view', 'n_clicks')]
 )
 def update_cad_visualization(n_clicks):
     if n_clicks == 0:
-        return "" # No image initially, or a placeholder path
+        return "", "#", {'display': 'none', 'marginTop': '10px'}
 
-    # Define path within assets folder
-    # Ensure the assets folder exists (it should have been created by a previous step or manually)
+    # Define paths within assets folder
     assets_dir = os.path.join(os.path.dirname(__file__), '..', '..', 'assets')
+    # Safeguard assets directory creation (though it should exist)
     if not os.path.exists(assets_dir):
-        os.makedirs(assets_dir) # Should not be strictly necessary if created before
+        os.makedirs(assets_dir)
 
-    output_svg_path = os.path.join(assets_dir, "flashlight_view.svg")
+    svg_filename = "flashlight_view.svg"
+    png_filename = "flashlight_view.png"
+    output_svg_path = os.path.join(assets_dir, svg_filename)
+    output_png_path = os.path.join(assets_dir, png_filename)
 
     # Generate the CAD model assembly
     flashlight_assembly = get_full_flashlight_assembly()
 
     # Export the SVG image
-    # The export_flashlight_image function prints to console, which is fine for now.
     export_flashlight_image(flashlight_assembly, output_path=output_svg_path)
 
-    # Return the path to the image in the assets folder with a cache-busting query string
-    # Dash serves files from the 'assets' folder automatically at '/assets/filename'
-    return f"/assets/flashlight_view.svg?t={time.time()}"
+    # Convert SVG to PNG
+    convert_svg_to_png(output_svg_path, output_png_path)
+
+    # Prepare outputs
+    svg_src = f"/assets/{svg_filename}?t={time.time()}"
+    png_href = f"/assets/{png_filename}?t={time.time()}" # Cache-busting for download link might not be strictly needed but doesn't hurt
+    link_style = {'display': 'inline-block', 'marginTop': '10px', 'padding': '5px', 'border': '1px solid #ccc', 'borderRadius': '4px', 'textDecoration': 'none'}
+
+    return svg_src, png_href, link_style
 
 
 # Standard Dash app execution line
