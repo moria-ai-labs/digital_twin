@@ -2,4 +2,3 @@ cadquery
 simpy
 dash
 plotly
-CairoSVG

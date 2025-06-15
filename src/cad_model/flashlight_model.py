@@ -1,6 +1,5 @@
 import cadquery as cq
 
-import cairosvg
 import cadquery as cq
 
 def get_full_flashlight_assembly():
@@ -114,18 +113,6 @@ def export_flashlight_image(assembly, output_path="flashlight_view.svg", img_wid
     except Exception as e:
         print(f"Error exporting SVG image: {e}")
 
-# --- SVG to PNG Conversion Function ---
-def convert_svg_to_png(svg_path, png_path):
-    """
-    Converts an SVG file to a PNG file using CairoSVG.
-    """
-    print(f"Converting {svg_path} to {png_path}...")
-    try:
-        cairosvg.svg2png(url=svg_path, write_to=png_path)
-        print(f"Successfully converted {svg_path} to {png_path}")
-    except Exception as e:
-        print(f"Error converting SVG to PNG: {e}")
-
 if __name__ == "__main__":
     # This block is executed when the script is run directly.
     # It will perform the STL export defined above and then the SVG export.
@@ -139,9 +126,4 @@ if __name__ == "__main__":
     print(f"Full flashlight bounding box: {flashlight_assembly.val().BoundingBox()}")
 
     # Call the SVG export function for the full_flashlight assembly
-    svg_output_path = "flashlight_view.svg"
-    export_flashlight_image(flashlight_assembly, output_path=svg_output_path)
-
-    # Convert the exported SVG to PNG
-    png_output_path = "flashlight_view.png"
-    convert_svg_to_png(svg_output_path, png_output_path)
+    export_flashlight_image(flashlight_assembly, output_path="flashlight_view.svg")
