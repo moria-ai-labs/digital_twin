@@ -19,23 +19,32 @@ class AssemblySimulation:
         self.assembly_steps = assembly_steps
         self.total_assembly_time = 0
         self.assembly_log = []
+        self.gantt_data = [] # For Gantt chart data collection
 
     def perform_step(self, step_name, duration):
         '''Simulates a single assembly step.'''
+        start_time = self.env.now
         print(f"{self.env.now:.2f}: Starting: {step_name}")
         self.assembly_log.append(f"{self.env.now:.2f}: Starting: {step_name}")
 
         yield self.env.timeout(duration)
 
+        finish_time = self.env.now
         print(f"{self.env.now:.2f}: Finished: {step_name} (Took: {duration} mins)")
         self.assembly_log.append(f"{self.env.now:.2f}: Finished: {step_name} (Took: {duration} mins)")
         self.total_assembly_time += duration
+        self.gantt_data.append(dict(
+            Task=step_name,
+            Start=start_time,
+            Finish=finish_time,
+            # Optional: Resource='Worker 1' # Placeholder if resources are added
+        ))
 
     def run_simulation(self):
         '''Runs the assembly simulation for all steps sequentially.'''
         print(f"--- Starting Assembly Simulation ---")
-        self.assembly_log.append(f"--- Starting Assembly Simulation ---")
-
+        self.assembly_log = [f"{self.env.now:.2f}: --- Starting Assembly Simulation ---"] # Reset log
+        self.gantt_data = [] # Reset Gantt data for the run
         self.total_assembly_time = 0 # Reset for the run
 
         for step in self.assembly_steps:
@@ -61,3 +70,7 @@ if __name__ == "__main__":
     for entry in assembly_sim.assembly_log:
         print(entry)
     print(f"Final Calculated Total Assembly Time: {assembly_sim.total_assembly_time} minutes")
+
+    print("\nCollected Gantt Data:")
+    for item in assembly_sim.gantt_data:
+        print(item)

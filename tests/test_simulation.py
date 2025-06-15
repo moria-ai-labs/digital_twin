@@ -36,7 +36,20 @@ class TestSimulationModules(unittest.TestCase):
 
         expected_total_assembly_time = sum(s['duration'] for s in ASSEMBLY_STEPS_DATA)
         self.assertEqual(asm_sim.total_assembly_time, expected_total_assembly_time)
-        # print(f"Assembly Test: Time - {asm_sim.total_assembly_time}")
+
+        # Verify Gantt data
+        self.assertTrue(len(asm_sim.gantt_data) > 0, "Gantt data should not be empty")
+        self.assertEqual(len(asm_sim.gantt_data), len(ASSEMBLY_STEPS_DATA), "Gantt data should have one entry per assembly step")
+
+        for item in asm_sim.gantt_data:
+            self.assertIn('Task', item, "Gantt item should have 'Task' key")
+            self.assertIn('Start', item, "Gantt item should have 'Start' key")
+            self.assertIn('Finish', item, "Gantt item should have 'Finish' key")
+            self.assertIsInstance(item['Task'], str, "'Task' should be a string")
+            self.assertIsInstance(item['Start'], (int, float), "'Start' should be a number")
+            self.assertIsInstance(item['Finish'], (int, float), "'Finish' should be a number")
+            self.assertTrue(item['Finish'] >= item['Start'], f"Finish time should be >= Start time for task {item['Task']}")
+        # print(f"Assembly Test: Time - {asm_sim.total_assembly_time}, Gantt entries - {len(asm_sim.gantt_data)}")
 
 if __name__ == '__main__':
     unittest.main()

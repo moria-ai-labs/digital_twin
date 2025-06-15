@@ -11,11 +11,12 @@ This project aims to estimate the impact of changes in the physical configuratio
 
 ## Project Structure
 
-*   `src/cad_model/flashlight_model.py`: Defines the flashlight's 3D model using CadQuery. Can be run to export an STL file.
+*   `src/cad_model/flashlight_model.py`: Defines the flashlight's 3D model using CadQuery. Can be run to export an STL file and an SVG image.
 *   `src/simulation/procurement.py`: Simulates the procurement of flashlight components.
-*   `src/simulation/assembly.py`: Simulates the assembly process of the flashlight.
-*   `src/dashboard/app.py`: A Plotly Dash application to visualize simulation results and impact of changes.
+*   `src/simulation/assembly.py`: Simulates the assembly process of the flashlight and collects data for Gantt chart visualization.
+*   `src/dashboard/app.py`: A Plotly Dash application to visualize simulation results, CAD models, and assembly processes.
 *   `tests/`: Contains unit tests for the project.
+*   `assets/`: Stores static assets like the exported SVG image for the dashboard.
 *   `requirements.txt`: Lists Python dependencies.
 
 ## Setup
@@ -30,33 +31,43 @@ This project aims to estimate the impact of changes in the physical configuratio
     ```bash
     pip install -r requirements.txt
     ```
+    For CAD model image export, additional system dependencies might be required by CadQuery's underlying OCP backend, such as Xvfb for headless environments if direct export fails (e.g., `sudo apt-get install xvfb`).
 
 ## How to Run
 
-### Generate CAD Model
+### Generate CAD Model Files
 
-To generate the `full_flashlight.stl` file from the CAD model:
+To generate the `full_flashlight.stl` and `flashlight_view.svg` files from the CAD model script directly:
 ```bash
-python src/cad_model/flashlight_model.py
+# May require Xvfb for SVG export in headless environments:
+# xvfb-run -a python3 src/cad_model/flashlight_model.py
+python3 src/cad_model/flashlight_model.py
 ```
-This will create/update the STL file in the project root.
+This will create/update the STL and SVG files in the project root.
 
 ### Run Simulations (via Dashboard)
 
 To run the simulations and view the dashboard:
 ```bash
-python src/dashboard/app.py
+python3 src/dashboard/app.py
 ```
-Navigate to the URL provided (usually `http://127.0.0.1:8050/`) in your web browser. Click the "Run Simulations" button to see the results.
+Navigate to the URL provided (usually `http://127.0.0.1:8050/`) in your web browser.
+
+The dashboard now features multiple tabs:
+*   **Simulation Results**: Shows the main procurement (including scenario comparison) and assembly simulation summary outcomes. Click the "Run Simulations" button here to populate all simulation-dependent views.
+*   **CAD Visualization**: Allows you to generate and view an SVG image of the flashlight model. Click the 'Generate/Refresh CAD View' button within this tab. The image is saved to the `assets/` folder.
+*   **Assembly Visualization**: Displays a Gantt chart representing the steps and durations of the assembly process. This chart is populated after running simulations from the 'Simulation Results' tab.
 
 ### Run Unit Tests
 
 To run the unit tests:
 ```bash
-python -m unittest discover tests/
+# May require Xvfb for CAD export tests in headless environments:
+# xvfb-run -a python3 -m unittest discover tests/
+python3 -m unittest discover tests/
 ```
 Or run individual test files:
 ```bash
-python -m unittest tests/test_simulation.py
-python -m unittest tests/test_cad_model.py
+python3 -m unittest tests/test_simulation.py
+python3 -m unittest tests/test_cad_model.py # This might require Xvfb
 ```
