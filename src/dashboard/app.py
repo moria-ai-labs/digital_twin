@@ -99,4 +99,4 @@ def update_simulation_results(n_clicks):
 if __name__ == '__main__':
     # Note: When running locally, Dash server will typically be on http://127.0.0.1:8050/
     # The server needs to be stopped manually (e.g., Ctrl+C in the terminal)
-    app.run_server(debug=True)
+    app.run(debug=True)
